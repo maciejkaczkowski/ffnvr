@@ -1,0 +1,17 @@
+[Unit]
+Description=NVR: nvr01, Group: -, Camera: cam02
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+MemoryAccounting=yes
+MemoryMax=200M
+ExecStartPre=/bin/mkdir -p /srv/disk1/nvr01/cam02
+ExecStart=/usr/bin/ffmpeg -use_wallclock_as_timestamps 1 -analyzeduration 1000000 -probesize 1000000 -fflags +igndts -rtsp_transport tcp -timeout 10000000 -loglevel warning -i rtsp://192.168.0.59:554/live0.264 -an -vcodec copy -strict -2 -movflags +faststart+frag_keyframe+empty_moov -f segment -segment_atclocktime 1 -reset_timestamps 1 -strftime 1 -segment_time 900 /srv/disk1/nvr01/cam02/%%Y-%%m-%%dT%%H-%%M-%%S.mkv
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
