@@ -32,6 +32,7 @@ type accountView struct {
 	Starts               []startOpt // the start pages the user may choose (the modules of the rights)
 	Live                 bool       // the user may use the live view: its own settings
 	ZoomHQ               bool       // a zoomed live tile switches to HQ
+	Themes               []startOpt // the looks of the panel, the user's one checked
 }
 
 type startOpt struct {
@@ -73,6 +74,10 @@ func (s *Server) accountPage(p *systemPage, store *config.Store, q url.Values) {
 			v.Starts = append(v.Starts, startOpt{Value: m, Label: t[m], Checked: startURL(m) == cur})
 		}
 	}
+	// the look: every user chooses their own (the day unless chosen)
+	for _, th := range profile.Themes {
+		v.Themes = append(v.Themes, startOpt{Value: th, Label: t["acc_theme_"+th], Checked: th == p.Theme})
+	}
 	if p.Can[modules.PermLive] {
 		st, _ := s.prof.Settings(p.User)
 		v.Live, v.ZoomHQ = true, st.ZoomToHQ()
@@ -84,6 +89,8 @@ func (s *Server) accountPage(p *systemPage, store *config.Store, q url.Values) {
 		p.Flash, p.FlashKind = t["acc_changed"], "ok"
 	case "start":
 		p.Flash, p.FlashKind = t["acc_start_saved"], "ok"
+	case "theme":
+		p.Flash, p.FlashKind = t["acc_theme_saved"], "ok"
 	}
 	if e := q.Get("err"); e != "" {
 		p.Flash, p.FlashKind = e, "err"
@@ -228,6 +235,33 @@ func (s *Server) accountLive(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/?p=account&ok=live", http.StatusSeeOther)
 }
 
+// POST /account/theme: the look of the panel for the user (auto, day or night); every
+// signed in user may choose it, whatever the policy allows.
+func (s *Server) accountTheme(w http.ResponseWriter, r *http.Request) {
+	se := s.current(r)
+	if se == nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	if subtle.ConstantTimeCompare([]byte(se.csrf), []byte(r.PostFormValue("csrf"))) != 1 {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	theme := r.PostFormValue("theme")
+	if profile.NormTheme(theme) != theme {
+		http.Error(w, "no such theme", http.StatusBadRequest)
+		return
+	}
+	if err := s.prof.SetTheme(se.user, theme); err != nil {
+		s.opt.Log.Printf("web: %s: theme: %v", se.user, err)
+		http.Redirect(w, r, "/?p=account&err="+url.QueryEscape(err.Error()), http.StatusSeeOther)
+		return
+	}
+	rememberTheme(w, r, theme)
+	s.opt.Log.Printf("web: %s: theme %s", se.user, theme)
+	http.Redirect(w, r, "/?p=account&ok=theme", http.StatusSeeOther)
+}
+
 var _ = template.Must(systemTmpl.Parse(`
 {{define "account"}}{{with .Account}}
 {{if $.Flash}}<div class="flash {{$.FlashKind}}" role="status">{{$.Flash}}</div>{{end}}
@@ -244,6 +278,14 @@ var _ = template.Must(systemTmpl.Parse(`
    {{range .Starts}}<label class="chk"><input type="radio" name="start" value="{{.Value}}"{{if .Checked}} checked{{end}}> {{.Label}}</label>{{end}}</fieldset>
    <button class="btn primary" type="submit">{{$.T.acc_save}}</button>
   </form>{{else}}<div class="empty">{{with index .Starts 0}}{{printf $.T.acc_start_only .Label}}{{end}}</div>{{end}}
+ </section>
+ <section><div class="sh"><h2>{{$.T.acc_theme}}</h2></div>
+  <form method="post" action="/account/theme" style="padding:16px">
+   <input type="hidden" name="csrf" value="{{$.CSRF}}">
+   <fieldset style="border:0;margin:0 0 12px;padding:0"><legend class="note" style="padding:0;margin-bottom:6px">{{$.T.acc_theme_note}}</legend>
+   {{range .Themes}}<label class="chk"><input type="radio" name="theme" value="{{.Value}}"{{if .Checked}} checked{{end}}> {{.Label}}</label>{{end}}</fieldset>
+   <button class="btn primary" type="submit">{{$.T.acc_save}}</button>
+  </form>
  </section>
  {{if .Live}}<section><div class="sh"><h2>{{$.T.acc_live}}</h2></div>
   <form method="post" action="/account/live" style="padding:16px">

@@ -12,27 +12,27 @@ var _ = template.Must(systemTmpl.Funcs(template.FuncMap{
 {{define "rsstrip"}}<div class="rsstrip">{{range .}}<i class="m-{{.Mode}}" style="left:{{.Left}}%;width:{{.Width}}%" title="{{.Title}}"></i>{{end}}</div>{{end}}
 
 {{define "rsstyle"}}<style>
-.rsstrip{position:relative;height:14px;border-radius:3px;background:#eef1f4;overflow:hidden;min-width:180px}
+.rsstrip{position:relative;height:14px;border-radius:3px;background:var(--c-fill2);overflow:hidden;min-width:180px}
 .rsstrip i{position:absolute;top:0;bottom:0}
 .rsstrip.big{height:22px}
-.m-regular{background:#33a9d6}.m-alarm{background:#d4483d}.m-none{background:repeating-linear-gradient(135deg,#eef1f4 0 5px,#e2e6eb 5px 10px)}
-.rsticks{position:relative;height:15px;font-size:11px;color:#5b6878;margin:0 0 3px;font-variant-numeric:tabular-nums;min-width:180px}
+.m-regular{background:#33a9d6}.m-alarm{background:#d4483d}.m-none{background:repeating-linear-gradient(135deg,var(--c-fill2) 0 5px,var(--c-fill3) 5px 10px)}
+.rsticks{position:relative;height:15px;font-size:11px;color:var(--c-muted);margin:0 0 3px;font-variant-numeric:tabular-nums;min-width:180px}
 .rsticks span{position:absolute;top:0;transform:translateX(-50%)}
 .rsticks span:first-child{transform:none}.rsticks span:last-child{transform:translateX(-100%)}
-.rsweek{display:grid;grid-template-columns:28px 1fr;gap:3px 8px;align-items:center;font-size:11px;color:#44505f;min-width:240px}
-.rslegend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:#44505f;align-items:center}
+.rsweek{display:grid;grid-template-columns:28px 1fr;gap:3px 8px;align-items:center;font-size:11px;color:var(--c-muted2);min-width:240px}
+.rslegend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--c-muted2);align-items:center}
 .rslegend b{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-3px;margin-right:6px}
 .rsform{padding:16px;display:flex;flex-direction:column;gap:16px}
 .rsform fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:16px;min-width:0}
 .rsform label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500;max-width:420px}
 .rsmodes{display:flex;flex-wrap:wrap;gap:8px}
-.rsmodes label{display:flex;align-items:center;gap:8px;border:1px solid #ccd3dc;border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer;background:#fff}
+.rsmodes label{display:flex;align-items:center;gap:8px;border:1px solid var(--c-input-line);border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer;background:var(--c-card)}
 .rsmodes label:has(input:checked){border-color:#066fd1;box-shadow:0 0 0 1px #066fd1}
 .rsmodes input{margin:0}
 .rsmodes b{width:16px;height:16px;border-radius:3px;display:inline-block}
 .rsgridwrap{overflow-x:auto;padding-bottom:4px}
 .rsgridbox{min-width:720px}
-.rsgrid{display:grid;grid-template-columns:repeat(96,1fr);height:56px;border:1px solid #ccd3dc;border-radius:6px;overflow:hidden;touch-action:none;user-select:none;cursor:crosshair}
+.rsgrid{display:grid;grid-template-columns:repeat(96,1fr);height:56px;border:1px solid var(--c-input-line);border-radius:6px;overflow:hidden;touch-action:none;user-select:none;cursor:crosshair}
 .rsgrid span{border-right:1px solid rgba(255,255,255,.55)}
 .rsgrid span:nth-child(4n){border-right-color:rgba(24,36,51,.25)}
 .rsgrid span:nth-child(8n){border-right-color:rgba(24,36,51,.5)}
@@ -41,7 +41,7 @@ var _ = template.Must(systemTmpl.Funcs(template.FuncMap{
 .rsdays td{vertical-align:middle}
 .rsdays select{min-width:200px}
 .rschecks{display:flex;flex-wrap:wrap;gap:12px;font-size:13px}
-.rsnvr{border-top:1px solid #e8ebef}
+.rsnvr{border-top:1px solid var(--c-line3)}
 .rsnvr:first-of-type{border-top:0}
 .rsnvr .bar2 h3{margin:0;font-size:14px;font-weight:600}
 td .note{display:block;margin-top:2px}
@@ -54,7 +54,7 @@ td .note{display:block;margin-top:2px}
 {{define "schedule"}}{{template "rsstyle"}}{{with .Schedule}}
 {{if $.Flash}}<div class="flash {{$.FlashKind}}" role="status">{{$.Flash}}</div>{{end}}
 {{if .Day}}{{template "rsday" $}}{{else if .Week}}{{template "rsweekedit" $}}{{else}}
-{{if not .CanEdit}}<div class="flash ok" style="background:#f6f8fb;border-color:#dce1e7;color:#44505f">{{$.T.rs_view_only}}</div>{{end}}
+{{if not .CanEdit}}<div class="flash ok" style="background:var(--c-sub);border-color:var(--c-line);color:var(--c-muted2)">{{$.T.rs_view_only}}</div>{{end}}
 
 <section><div class="sh"><h2>{{$.T.rs_step1}}</h2><span class="b">{{if .CanEdit}}<a class="btn sm" href="/?p=schedule&amp;day=%2B">{{$.T.rs_day_new}}</a>{{end}}</span></div>
  <div class="info-note">{{$.T.rs_step1_note}}</div>
@@ -66,7 +66,7 @@ td .note{display:block;margin-top:2px}
    <td>{{if .Used}}{{.Used}}{{else}}<span class="note">—</span>{{end}}</td>
    <td style="text-align:right;white-space:nowrap">{{if $.Schedule.CanEdit}}<a class="btn sm" href="/?p=schedule&amp;day={{.Name}}">{{$.T.rs_edit}}</a>{{end}}</td>
   </tr>{{end}}</tbody></table></div>
-  <div style="padding:10px 16px;border-top:1px solid #e8ebef">{{template "rslegend" $.T}}</div>
+  <div style="padding:10px 16px;border-top:1px solid var(--c-line3)">{{template "rslegend" $.T}}</div>
  {{else}}<div class="empty">{{$.T.rs_no_days}}</div>{{end}}
 </section>
 
@@ -131,7 +131,7 @@ td .note{display:block;margin-top:2px}
  <label class="f">{{$.T.rs_comment}}<input class="in" name="comment" value="{{.Comment}}" maxlength="200"></label>
  <div class="rsrow"><button class="btn primary" type="submit">{{$.T.rs_save}}</button><a class="btn" href="/?p=schedule">{{$.T.rs_cancel}}</a></div>
 </form>
-{{if not .New}}<form method="post" action="/record/save" class="bar2" style="border-bottom:0;border-top:1px solid #eef1f4;background:#fff">
+{{if not .New}}<form method="post" action="/record/save" class="bar2" style="border-bottom:0;border-top:1px solid var(--c-line4);background:var(--c-card)">
  <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="action" value="day-delete"><input type="hidden" name="name" value="{{.Orig}}">
  <span class="note">{{$.T.rs_delete_day_note}}</span><button class="btn danger sm" type="submit">{{$.T.rs_delete}}</button>
 </form>{{end}}
@@ -201,7 +201,7 @@ parse();
  <label class="f">{{$.T.rs_comment}}<input class="in" name="comment" value="{{.Comment}}" maxlength="200"></label>
  <div class="rsrow"><button class="btn primary" type="submit">{{$.T.rs_save}}</button><a class="btn" href="/?p=schedule">{{$.T.rs_cancel}}</a></div>
 </form>
-{{if not .New}}<form method="post" action="/record/save" class="bar2" style="border-bottom:0;border-top:1px solid #eef1f4;background:#fff">
+{{if not .New}}<form method="post" action="/record/save" class="bar2" style="border-bottom:0;border-top:1px solid var(--c-line4);background:var(--c-card)">
  <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="action" value="week-delete"><input type="hidden" name="name" value="{{.Orig}}">
  <span class="note">{{$.T.rs_delete_week_note}}</span><button class="btn danger sm" type="submit">{{$.T.rs_delete}}</button>
 </form>{{end}}

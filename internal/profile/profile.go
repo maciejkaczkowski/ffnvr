@@ -4,7 +4,7 @@
 //
 //	/var/lib/ffnvr/profile/<user>/dashboards.json   saved views of the live view
 //	/var/lib/ffnvr/profile/<user>/sessions.json     sign ins of the panel (see Sessions)
-//	/var/lib/ffnvr/profile/<user>/settings.json     own preferences: the start page, HQ on zoom (see Settings)
+//	/var/lib/ffnvr/profile/<user>/settings.json     own preferences: the start page, HQ on zoom, the theme (see Settings)
 //
 // Every file is an object with its own "version", so that a kind can change its shape
 // later and read the files of the older one. A file is written whole and atomically;

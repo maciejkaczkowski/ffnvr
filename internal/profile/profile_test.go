@@ -89,3 +89,30 @@ func TestSettings(t *testing.T) {
 		t.Error("zoom to HQ again")
 	}
 }
+
+func TestTheme(t *testing.T) {
+	s := New(t.TempDir())
+	// nothing chosen: the day
+	if st, _ := s.Settings("jan"); st.ThemeOf() != ThemeDay {
+		t.Errorf("default theme %q", st.ThemeOf())
+	}
+	s.SetStart("jan", "archive")
+	for _, th := range Themes {
+		if err := s.SetTheme("jan", th); err != nil {
+			t.Fatal(err)
+		}
+		if st, _ := s.Settings("jan"); st.ThemeOf() != th || st.Start != "archive" {
+			t.Errorf("%s: %+v", th, st)
+		}
+	}
+	if err := s.SetTheme("jan", "purple"); err == nil {
+		t.Error("an unknown theme taken")
+	}
+	if st, _ := s.Settings("jan"); st.ThemeOf() != ThemeNight {
+		t.Errorf("an unknown theme changed the file: %+v", st)
+	}
+	// a file with a theme it does not know (a newer panel): the day
+	if (Settings{Theme: "sepia"}).ThemeOf() != ThemeDay || (Settings{}).ThemeOf() != ThemeDay {
+		t.Error("unknown themes are the day")
+	}
+}

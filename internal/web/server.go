@@ -108,6 +108,7 @@ func New(opt Options) *Server {
 	s.mux.HandleFunc("POST /account/password", s.accountPassword)
 	s.mux.HandleFunc("POST /account/start", s.accountStart)
 	s.mux.HandleFunc("POST /account/live", s.accountLive)
+	s.mux.HandleFunc("POST /account/theme", s.accountTheme)
 	s.mux.HandleFunc("GET /lang", s.setLang)
 	s.mux.HandleFunc("GET /{$}", s.system)
 	s.mux.HandleFunc("POST /tools/reboot", s.rebootTool)
@@ -256,6 +257,7 @@ func lang(r *http.Request) string {
 type page struct {
 	Brand                       modules.Branding
 	Lang, Title, CSRF, Nonce    string
+	Theme                       string // the look (see theme.go): the cookie of the last signed in page
 	T                           map[string]string
 	Languages                   any
 	Error, Info, Username, User string
@@ -264,6 +266,7 @@ type page struct {
 func (s *Server) render(w http.ResponseWriter, r *http.Request, name string, p page) {
 	p.Lang = lang(r)
 	p.T = texts[p.Lang]
+	p.Theme = cookieTheme(r)
 	p.Brand = modules.Branding{Name: "ffnvr", LoginName: true, LoginLogo: true}
 	if st, err := s.opt.Load(); err == nil {
 		p.Brand = modules.WebBranding(st)

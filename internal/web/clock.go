@@ -183,7 +183,7 @@ var _ = template.Must(systemTmpl.Parse(`
  <tbody>{{range .Sys.Nvrs}}<tr>
   <td style="font-weight:500"><a href="/?p=nvr&amp;n={{.Name}}">{{.Name}}</a></td><td>{{.Type}}</td><td>{{or .Model "—"}}</td>
   <td>{{if .ClockKnown}}<span class="badge {{.ClockKind}}">{{.Clock}}</span>{{else}}<span class="note">—</span>{{end}}</td>
-  <td style="color:#44505f">{{or .Checked "—"}}</td>
+  <td style="color:var(--c-muted2)">{{or .Checked "—"}}</td>
   <td style="text-align:right;white-space:nowrap">{{if .Local}}<span class="note">{{$.T.only_remote}}</span>{{else if .ClockSettable}}
    <form method="post" action="/tools/clock" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="nvr" value="{{.Name}}"><input type="hidden" name="action" value="sync"><input type="hidden" name="back" value="list">
     <button type="submit" class="btn sm act">{{$.T.ck_sync_btn}}</button></form>
@@ -201,12 +201,12 @@ var _ = template.Must(systemTmpl.Parse(`
  <section class="half"><div class="sh"><h2>{{$.T.ck_clock}}</h2><span class="b"><span class="badge {{.OffsetKind}}">{{.Offset}}</span></span></div>
   <dl><dt>{{$.T.ck_recorder_time}}</dt><dd class="mono">{{.Time}}</dd><dt>{{$.T.ck_server_time}}</dt><dd class="mono">{{or .Server "—"}}</dd>
    <dt>{{$.T.ck_offset}}</dt><dd>{{.Offset}}</dd><dt>{{$.T.ck_zone}}</dt><dd class="mono">{{.Zone}}</dd></dl>
-  <form method="post" action="/tools/clock" class="bar2" style="border-bottom:0;border-top:1px solid #eef1f4;background:#fff">
+  <form method="post" action="/tools/clock" class="bar2" style="border-bottom:0;border-top:1px solid var(--c-line4);background:var(--c-card)">
    <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="nvr" value="{{.Nvr.Name}}"><input type="hidden" name="action" value="sync">
    <span class="note" style="flex:1 1 200px">{{$.T.ck_sync_note}}</span>
    <button class="btn primary" type="submit">{{$.T.ck_sync_long}}</button>
   </form>
-  <form method="post" action="/tools/clock" class="bar2" style="border-bottom:0;border-top:1px solid #eef1f4;background:#fff">
+  <form method="post" action="/tools/clock" class="bar2" style="border-bottom:0;border-top:1px solid var(--c-line4);background:var(--c-card)">
    <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="nvr" value="{{.Nvr.Name}}"><input type="hidden" name="action" value="set">
    <div class="dest"><label>{{$.T.ck_new_time}}<input class="in" type="datetime-local" name="time" step="1" value="{{.Input}}" required></label></div>
    <button class="btn" type="submit">{{$.T.ck_set_btn}}</button>

@@ -69,6 +69,7 @@ type systemPage struct {
 	CamBack, CamFrom                              string                // the camera's page: where Back leads, the page it was opened from ("": its recorder)
 	CamRec                                        *camRecView           // the camera's page: its latest recordings
 	Account                                       *accountView          // the user's own page
+	Theme                                         string                // the look of the panel: profile.Theme* (see theme.go)
 }
 
 type jobTable struct {
@@ -141,6 +142,11 @@ func (s *Server) system(w http.ResponseWriter, r *http.Request) {
 	sys := s.gather(ctx, store, se.user, t)
 	p := systemPage{Lang: lng, T: t, Sys: sys, CSRF: se.csrf, User: se.user, Module: "system", Page: q.Get("p"), Can: rights,
 		Updated: time.Now().Format("15:04:05"), Self: r.URL.RequestURI(), Brand: modules.WebBranding(store).Name}
+	// the user's theme; the sign in page follows it through the cookie
+	// (a profile that cannot be read: the day)
+	st, _ := s.prof.Settings(se.user)
+	p.Theme = st.ThemeOf()
+	rememberTheme(w, r, p.Theme)
 	access := map[string]bool{}
 	for _, n := range sys.Nvrs {
 		access[n.Name] = true

@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -199,5 +200,75 @@ func TestAccountLive(t *testing.T) {
 	notContains(t, "no live", page, `action="/account/live"`)
 	if resp := set(url.Values{"zoom_hq": {"1"}}); resp.StatusCode != http.StatusForbidden {
 		t.Errorf("without live: %d", resp.StatusCode)
+	}
+}
+
+// The look of the panel: the day unless the user chooses automatic or night; the sign in
+// page follows the last signed in page.
+func TestAccountTheme(t *testing.T) {
+	srv, _ := setup(t)
+	c := client()
+	_, page := get(t, c, srv.URL+"/login")
+	contains(t, "sign in: the day", page, `<html lang="en" data-theme="day">`, `<meta name="color-scheme" content="light">`)
+	signIn(t, c, srv.URL, "jan", "secret")
+	_, page = get(t, c, srv.URL+"/?p=account")
+	contains(t, "the day by default", page, `<html lang="en" data-theme="day">`, "<h2>Appearance</h2>", `action="/account/theme"`,
+		`<input type="radio" name="theme" value="auto"> Automatic`, `<input type="radio" name="theme" value="day" checked> Day`,
+		`<input type="radio" name="theme" value="night"> Night`)
+	csrf := csrfRe.FindStringSubmatch(page)[1]
+	set := func(theme string) *http.Response {
+		t.Helper()
+		resp, err := c.PostForm(srv.URL+"/account/theme", url.Values{"csrf": {csrf}, "theme": {theme}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		return resp
+	}
+	if resp := set("night"); resp.Request.URL.RawQuery != "p=account&ok=theme" {
+		t.Fatalf("saved: %s", resp.Request.URL)
+	}
+	_, page = get(t, c, srv.URL+"/?p=account&ok=theme")
+	contains(t, "night", page, "The appearance has been saved.", `data-theme="night"`, `<meta name="color-scheme" content="dark">`,
+		`<input type="radio" name="theme" value="night" checked> Night`)
+	_, page = get(t, c, srv.URL+"/?p=dash")
+	contains(t, "night on every page", page, `data-theme="night"`)
+	set("auto")
+	_, page = get(t, c, srv.URL+"/?p=account")
+	contains(t, "auto", page, `data-theme="auto"`, `<meta name="color-scheme" content="light dark">`)
+	// the sign in page follows it after signing out
+	c.PostForm(srv.URL+"/logout", url.Values{"csrf": {csrf}})
+	_, page = get(t, c, srv.URL+"/login")
+	contains(t, "sign in: auto", page, `data-theme="auto"`)
+	signIn(t, c, srv.URL, "jan", "secret")
+	_, page = get(t, c, srv.URL+"/?p=account")
+	contains(t, "kept", page, `<input type="radio" name="theme" value="auto" checked> Automatic`)
+	csrf = csrfRe.FindStringSubmatch(page)[1]
+	if resp := set("purple"); resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("unknown theme: %d", resp.StatusCode)
+	}
+	if resp, _ := c.PostForm(srv.URL+"/account/theme", url.Values{"csrf": {"x"}, "theme": {"night"}}); resp.StatusCode != http.StatusForbidden {
+		t.Errorf("csrf: %d", resp.StatusCode)
+	}
+	// the theme is the user's own
+	o := client()
+	signIn(t, o, srv.URL, "ola", "ola")
+	_, page = get(t, o, srv.URL+"/?p=account")
+	contains(t, "ola: the day", page, `data-theme="day"`, `value="day" checked`)
+}
+
+// Every light color of the stylesheets is a variable that both themes define.
+func TestThemeVars(t *testing.T) {
+	re := regexp.MustCompile(`var\(--c-([a-z0-9-]+)\)`)
+	def := func(vars, name string) bool { return strings.Contains(vars, "--c-"+name+":") }
+	for _, src := range []string{systemCSS, css} {
+		for _, m := range re.FindAllStringSubmatch(src, -1) {
+			if !def(dayVars, m[1]) || !def(nightVars, m[1]) {
+				t.Errorf("--c-%s: not in both themes", m[1])
+			}
+		}
+	}
+	if strings.Count(dayVars, "--c-") != strings.Count(nightVars, "--c-") {
+		t.Error("the themes define different variables")
 	}
 }

@@ -4,14 +4,14 @@ import "html/template"
 
 // The design of the sign in page (colors, sizes, spacing) follows the mockup "1 · Sign
 // in"; it is rendered on the server, without scripts but the password toggle.
-const css = `
+const css = themeCSS + `
 *{box-sizing:border-box}
-body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif;color:#182433;background:#f2f4f7;font-size:14px}
-a{color:#0559a8}a:hover{color:#033f78}
+body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--c-fg);background:var(--c-bg);font-size:14px}
+a{color:var(--c-link)}a:hover{color:var(--c-link-h)}
 input:focus,select:focus,button:focus-visible,a:focus-visible{outline:2px solid #066fd1;outline-offset:1px}
 button,input,select{font:inherit}
 .page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px}
-.card{width:100%;max-width:480px;background:#fff;border:1px solid #d5dbe2;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(24,36,51,.06)}
+.card{width:100%;max-width:480px;background:var(--c-card);border:1px solid var(--c-line);border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(24,36,51,.06)}
 .card.wide{max-width:1100px}
 .head{background:#182433;padding:20px 24px;display:flex;align-items:center;gap:12px;border-bottom:3px solid #066fd1}
 .logo{width:34px;height:34px;border-radius:7px;background:#066fd1;color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
@@ -28,36 +28,37 @@ button,input,select{font:inherit}
 .field label{font-weight:500}
 .pfield{position:relative}
 .forgot{position:absolute;top:1px;right:0;font-size:13px;text-decoration:none}
-.in{height:40px;width:100%;border:1px solid #ccd3dc;border-radius:6px;padding:0 12px}
+.in{height:40px;width:100%;border:1px solid var(--c-input-line);border-radius:6px;padding:0 12px;background:var(--c-card);color:var(--c-fg)}
 .pwd{position:relative}
 .pwd .in{padding-right:44px}
-.eye{position:absolute;right:0;top:0;width:44px;height:40px;border:0;background:transparent;cursor:pointer;color:#5b6878;display:flex;align-items:center;justify-content:center}
+.eye{position:absolute;right:0;top:0;width:44px;height:40px;border:0;background:transparent;cursor:pointer;color:var(--c-muted);display:flex;align-items:center;justify-content:center}
 .buttons{display:flex;gap:10px;margin-top:8px}
 .primary{flex:1;height:42px;border-radius:6px;border:0;background:#066fd1;color:#fff;font-weight:600;cursor:pointer}
 .primary:hover{background:#0559a8}
-.secondary{flex:0 0 120px;height:42px;border-radius:6px;border:1px solid #ccd3dc;background:#fff;color:#182433;font-weight:500;cursor:pointer}
+.secondary{flex:0 0 120px;height:42px;border-radius:6px;border:1px solid var(--c-input-line);background:var(--c-card);color:var(--c-fg);font-weight:500;cursor:pointer}
 .msg{border-radius:6px;padding:10px 12px;font-size:13px}
-.msg.err{background:#fbebeb;color:#a12a2a;border:1px solid #f1c4c4}
-.msg.info{background:#eaf2fb;color:#0b4a87;border:1px solid #c3daf3}
+.msg.err{background:var(--c-err-bg2);color:var(--c-err-fg);border:1px solid var(--c-err-line2)}
+.msg.info{background:var(--c-info-bg);color:var(--c-info-fg);border:1px solid var(--c-info-line)}
 h2{margin:0;font-size:16px}
-.nvr{border:1px solid #d5dbe2;border-radius:8px;overflow:hidden}
-.nvr .t{background:#f7f8fa;padding:12px 16px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;border-bottom:1px solid #d5dbe2}
-.nvr .t span{color:#5b6878;font-size:13px}
+.nvr{border:1px solid var(--c-line);border-radius:8px;overflow:hidden}
+.nvr .t{background:var(--c-sub);padding:12px 16px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;border-bottom:1px solid var(--c-line)}
+.nvr .t span{color:var(--c-muted);font-size:13px}
 .scroll{overflow-x:auto}
 table{border-collapse:collapse;width:100%}
-th,td{text-align:left;padding:8px 16px;border-bottom:1px solid #eef1f4;white-space:nowrap}
-th{font-weight:500;color:#5b6878;font-size:12px}
+th,td{text-align:left;padding:8px 16px;border-bottom:1px solid var(--c-line4);white-space:nowrap}
+th{font-weight:500;color:var(--c-muted);font-size:12px}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2fb344;margin-right:6px}
-.dot.off{background:#aab4c0}
+.dot.off{background:var(--c-faint)}
 `
 
 const eye = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
 
-var tmpl = template.Must(template.New("").Funcs(template.FuncMap{"eye": func() template.HTML { return template.HTML(eye) }}).Parse(`
+var tmpl = template.Must(template.New("").Funcs(template.FuncMap{"eye": func() template.HTML { return template.HTML(eye) }, "colorScheme": colorScheme}).Parse(`
 {{define "head"}}<!doctype html>
-<html lang="{{.Lang}}">
+<html lang="{{.Lang}}" data-theme="{{.Theme}}">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="{{colorScheme .Theme}}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{.Title}} — {{.Brand.Name}}</title>
 <style>` + css + `</style>

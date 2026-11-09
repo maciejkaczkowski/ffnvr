@@ -332,14 +332,14 @@ var _ = template.Must(systemTmpl.Parse(`
  <section class="half"><div class="sh"><h2>{{$.T.fwup_h}}</h2></div>
  {{if not .Supported}}<div class="empty">{{$.T.fwup_only_dahua}}</div>{{else}}
   <div class="info-note">{{$.T.fwup_note}}</div>
-  {{with .Run}}<div style="padding:12px 16px;display:flex;flex-direction:column;gap:6px;border-bottom:1px solid #e8ebef"{{if .Active}} id="fwrunning"{{end}}>
+  {{with .Run}}<div style="padding:12px 16px;display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--c-line3)"{{if .Active}} id="fwrunning"{{end}}>
    <div style="display:flex;gap:8px;align-items:center"><span class="badge {{.Kind}}">{{.State}}</span><b style="font-weight:500">{{.Phase}}</b><span style="margin-left:auto;font-weight:600">{{.Percent}}%</span></div>
    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{.Percent}}"><i{{if .Err}} class="err"{{end}} style="width:{{.Percent}}%"></i></div>
    <span class="note">{{$.T.ar_file}}: <span class="mono">{{.File}}</span> ({{.Size}}) · {{.Who}}</span>
    {{if .Err}}<span class="note err">{{.Err}}</span>{{end}}
    {{if .Active}}<span class="note">{{$.T.fwup_keep_open}}</span>{{else if .OK}}<span class="note">{{$.T.fwup_restart}}</span>{{end}}
   </div>{{end}}
-  {{if not .Busy}}<form method="post" action="/tools/firmware" enctype="multipart/form-data" id="fwform" class="bar2" style="border-bottom:0;background:#fff" data-confirm="{{printf $.T.fwup_q .Nvr.Name}}">
+  {{if not .Busy}}<form method="post" action="/tools/firmware" enctype="multipart/form-data" id="fwform" class="bar2" style="border-bottom:0;background:var(--c-card)" data-confirm="{{printf $.T.fwup_q .Nvr.Name}}">
    <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="nvr" value="{{.Nvr.Name}}">
    <div class="dest"><label>{{$.T.fwup_file}}<input class="in" type="file" name="file" accept=".bin" required style="padding-top:5px"></label></div>
    <button class="btn primary" type="submit" id="fwgo">{{$.T.fwup_start}}</button>
